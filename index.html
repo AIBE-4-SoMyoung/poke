@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>포켓몬 도감 검색</title>
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap");
+
+      @font-face {
+        font-family: "OngleipKonkon";
+        src: url("https://cdn.jsdelivr.net/gh/projectnoonnu/2412-1@1.0/Ownglyph_corncorn-Rg.woff2")
+          format("woff2");
+        font-weight: normal;
+        font-display: swap;
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "OngleipKonkon", "Press Start 2P", cursive;
+        background-image: url('data:image/svg+xml,<svg width="400" height="400" xmlns="http://www.w3.org/2000/svg"><defs><pattern id="grass" x="0" y="0" width="40" height="40" patternUnits="userSpaceOnUse"><rect width="40" height="40" fill="%2378c850"/><rect x="0" y="0" width="20" height="20" fill="%2368b840"/><rect x="20" y="20" width="20" height="20" fill="%2368b840"/><circle cx="10" cy="10" r="3" fill="%2358a830"/><circle cx="30" cy="30" r="3" fill="%2358a830"/><circle cx="15" cy="25" r="2" fill="%2388d870"/><circle cx="35" cy="15" r="2" fill="%2388d870"/></pattern></defs><rect width="400" height="400" fill="url(%23grass)"/></svg>');
+        background-size: 200px 200px;
+        min-height: 100vh;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 20px;
+        image-rendering: pixelated;
+      }
+
+      .title-box {
+        background: #ffcc00;
+        border: 6px solid #000;
+        border-radius: 0;
+        padding: 20px 40px;
+        box-shadow: 6px 6px 0 #000;
+        position: relative;
+      }
+
+      .title-box::before {
+        content: "";
+        position: absolute;
+        top: -3px;
+        left: -3px;
+        right: -3px;
+        bottom: -3px;
+        border: 3px solid #fff;
+        pointer-events: none;
+      }
+
+      h1 {
+        color: #000;
+        text-shadow: 3px 3px 0 #ffaa00;
+        font-size: 24px;
+        letter-spacing: 2px;
+      }
+
+      .search-section {
+        background: #f8f8f8;
+        border: 6px solid #000;
+        padding: 30px 40px;
+        box-shadow: 6px 6px 0 #000;
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 20px;
+        max-width: 500px;
+        width: 100%;
+        position: relative;
+      }
+
+      .search-section::before {
+        content: "";
+        position: absolute;
+        top: -3px;
+        left: -3px;
+        right: -3px;
+        bottom: -3px;
+        border: 3px solid #fff;
+        pointer-events: none;
+      }
+
+      .search-section label {
+        font-size: 16px;
+        color: #000;
+        text-align: center;
+      }
+
+      .input-group {
+        display: flex;
+        gap: 10px;
+      }
+
+      #pokeId {
+        flex: 1;
+        padding: 16px;
+        border: 4px solid #000;
+        font-family: "OngleipKonkon", cursive;
+        font-size: 18px;
+        background: #fff;
+        box-shadow: inset 3px 3px 0 #ddd;
+      }
+
+      #pokeId:focus {
+        outline: none;
+        background: #fffacd;
+      }
+
+      #pokeBtn {
+        padding: 16px 30px;
+        background: #ff5555;
+        color: white;
+        border: 4px solid #000;
+        font-family: "OngleipKonkon", cursive;
+        font-size: 16px;
+        cursor: pointer;
+        box-shadow: 4px 4px 0 #000;
+        position: relative;
+        transition: all 0.1s;
+      }
+
+      #pokeBtn:hover {
+        background: #ff3333;
+      }
+
+      #pokeBtn:active {
+        box-shadow: 2px 2px 0 #000;
+        transform: translate(2px, 2px);
+      }
+
+      .encounter-message {
+        background: #fff;
+        border: 6px solid #000;
+        padding: 20px 30px;
+        box-shadow: 6px 6px 0 #000;
+        max-width: 500px;
+        width: 100%;
+        position: relative;
+        animation: bounce 0.5s ease-out;
+        margin-bottom: 10px;
+      }
+
+      .encounter-message::before {
+        content: "";
+        position: absolute;
+        top: -3px;
+        left: -3px;
+        right: -3px;
+        bottom: -3px;
+        border: 3px solid #ff5555;
+        pointer-events: none;
+      }
+
+      .encounter-message p {
+        font-size: 18px;
+        color: #000;
+        text-align: center;
+        line-height: 1.6;
+      }
+
+      .encounter-message .pokemon-name {
+        color: #ff5555;
+        text-shadow: 2px 2px 0 #ffcc00;
+        font-size: 20px;
+      }
+
+      @keyframes bounce {
+        0% {
+          transform: scale(0.5);
+          opacity: 0;
+        }
+        50% {
+          transform: scale(1.05);
+        }
+        100% {
+          transform: scale(1);
+          opacity: 1;
+        }
+      }
+
+      .pokemon-card {
+        background: #fff;
+        border: 6px solid #000;
+        padding: 25px;
+        box-shadow: 8px 8px 0 #000;
+        max-width: 500px;
+        width: 100%;
+        text-align: center;
+        animation: slideIn 0.3s ease-out;
+        position: relative;
+      }
+
+      .pokemon-card::before {
+        content: "";
+        position: absolute;
+        top: -3px;
+        left: -3px;
+        right: -3px;
+        bottom: -3px;
+        border: 3px solid #ffcc00;
+        pointer-events: none;
+      }
+
+      @keyframes slideIn {
+        from {
+          opacity: 0;
+          transform: scale(0.8);
+        }
+        to {
+          opacity: 1;
+          transform: scale(1);
+        }
+      }
+
+      .pokemon-card h4 {
+        font-size: 24px;
+        color: #000;
+        margin-bottom: 10px;
+        text-shadow: 2px 2px 0 #ffcc00;
+      }
+
+      .pokemon-card h5 {
+        font-size: 12px;
+        color: #666;
+        text-transform: uppercase;
+        margin-bottom: 15px;
+      }
+
+      .pokemon-image {
+        width: 200px;
+        height: 200px;
+        margin: 0 auto 15px;
+        background: #f0f0f0;
+        border: 4px solid #000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: inset 3px 3px 0 #ddd;
+        position: relative;
+      }
+
+      .pokemon-image::after {
+        content: "";
+        position: absolute;
+        width: 20px;
+        height: 20px;
+        background: #fff;
+        border: 3px solid #000;
+        border-radius: 50%;
+        top: 10px;
+        right: 10px;
+        box-shadow: inset 2px 2px 0 #ddd;
+      }
+
+      .pokemon-image img {
+        width: 170px;
+        height: 170px;
+        image-rendering: pixelated;
+      }
+
+      .pokemon-types {
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+        margin-bottom: 20px;
+        flex-wrap: wrap;
+      }
+
+      .type-badge {
+        padding: 10px 18px;
+        font-size: 12px;
+        font-weight: bold;
+        color: white;
+        border: 3px solid #000;
+        box-shadow: 3px 3px 0 #000;
+        letter-spacing: 1px;
+      }
+
+      .type-normal {
+        background: #a8a878;
+      }
+      .type-fire {
+        background: #f08030;
+      }
+      .type-water {
+        background: #6890f0;
+      }
+      .type-electric {
+        background: #f8d030;
+        color: #000;
+      }
+      .type-grass {
+        background: #78c850;
+      }
+      .type-ice {
+        background: #98d8d8;
+      }
+      .type-fighting {
+        background: #c03028;
+      }
+      .type-poison {
+        background: #a040a0;
+      }
+      .type-ground {
+        background: #e0c068;
+      }
+      .type-flying {
+        background: #a890f0;
+      }
+      .type-psychic {
+        background: #f85888;
+      }
+      .type-bug {
+        background: #a8b820;
+      }
+      .type-rock {
+        background: #b8a038;
+      }
+      .type-ghost {
+        background: #705898;
+      }
+      .type-dragon {
+        background: #7038f8;
+      }
+      .type-dark {
+        background: #705848;
+      }
+      .type-steel {
+        background: #b8b8d0;
+      }
+      .type-fairy {
+        background: #ee99ac;
+      }
+
+      .pokemon-stats {
+        display: flex;
+        justify-content: space-around;
+        margin-bottom: 15px;
+        padding: 20px;
+        background: #e8e8e8;
+        border: 4px solid #000;
+        box-shadow: inset 3px 3px 0 #d0d0d0;
+      }
+
+      .stat {
+        text-align: center;
+      }
+
+      .stat-label {
+        font-size: 12px;
+        color: #666;
+        margin-bottom: 8px;
+      }
+
+      .stat-value {
+        font-size: 20px;
+        color: #000;
+        text-shadow: 2px 2px 0 #ffcc00;
+      }
+
+      .audio-container {
+        margin-top: 15px;
+        padding: 15px;
+        background: #333;
+        border: 4px solid #000;
+      }
+
+      audio {
+        width: 100%;
+        height: 30px;
+        filter: brightness(1.2) contrast(1.1);
+      }
+
+      .pokeball-decoration {
+        position: fixed;
+        width: 80px;
+        height: 80px;
+        opacity: 0.3;
+        pointer-events: none;
+      }
+
+      .pokeball-1 {
+        top: 50px;
+        right: 50px;
+        animation: float 3s ease-in-out infinite;
+      }
+
+      .pokeball-2 {
+        bottom: 50px;
+        left: 50px;
+        animation: float 4s ease-in-out infinite;
+      }
+
+      @keyframes float {
+        0%,
+        100% {
+          transform: translateY(0px);
+        }
+        50% {
+          transform: translateY(-20px);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="pokeball-decoration pokeball-1">
+      <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+        <circle
+          cx="50"
+          cy="50"
+          r="45"
+          fill="#fff"
+          stroke="#000"
+          stroke-width="3"
+        />
+        <path
+          d="M 5 50 A 45 45 0 0 1 95 50"
+          fill="#ff0000"
+          stroke="#000"
+          stroke-width="3"
+        />
+        <circle
+          cx="50"
+          cy="50"
+          r="15"
+          fill="#fff"
+          stroke="#000"
+          stroke-width="3"
+        />
+        <circle
+          cx="50"
+          cy="50"
+          r="8"
+          fill="#fff"
+          stroke="#000"
+          stroke-width="2"
+        />
+      </svg>
+    </div>
+    <div class="pokeball-decoration pokeball-2">
+      <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+        <circle
+          cx="50"
+          cy="50"
+          r="45"
+          fill="#fff"
+          stroke="#000"
+          stroke-width="3"
+        />
+        <path
+          d="M 5 50 A 45 45 0 0 1 95 50"
+          fill="#ff0000"
+          stroke="#000"
+          stroke-width="3"
+        />
+        <circle
+          cx="50"
+          cy="50"
+          r="15"
+          fill="#fff"
+          stroke="#000"
+          stroke-width="3"
+        />
+        <circle
+          cx="50"
+          cy="50"
+          r="8"
+          fill="#fff"
+          stroke="#000"
+          stroke-width="2"
+        />
+      </svg>
+    </div>
+
+    <div class="title-box" id="homeBtn" style="cursor: pointer">
+      <h1>★ 포켓몬 도감 검색 ★</h1>
+    </div>
+
+    <section class="search-section">
+      <label>도감 번호</label>
+      <div class="input-group">
+        <input id="pokeId" type="number" min="1" placeholder="1-1025" />
+        <button id="pokeBtn">검색</button>
+      </div>
+    </section>
+
+    <section id="pokeBox"></section>
+
+    <script>
+      // 타입 한글 변환
+      const typeKorean = {
+        normal: "노말",
+        fire: "불꽃",
+        water: "물",
+        electric: "전기",
+        grass: "풀",
+        ice: "얼음",
+        fighting: "격투",
+        poison: "독",
+        ground: "땅",
+        flying: "비행",
+        psychic: "에스퍼",
+        bug: "벌레",
+        rock: "바위",
+        ghost: "고스트",
+        dragon: "드래곤",
+        dark: "악",
+        steel: "강철",
+        fairy: "페어리",
+      };
+
+      // 1. API에서 데이터 호출하기
+      async function getPokemon(id) {
+        // 입력값 유효성 검사
+        if (!id || id < 1 || id > 1025) {
+          alert(
+            "포켓몬이 존재하지 않습니다.\n1번부터 1025번 사이의 도감 번호를 입력해주세요."
+          );
+          return;
+        }
+
+        console.log(`${id}번 포켓몬을 불러옵니다`);
+        const response = await fetch(`https://pokeapi.co/api/v2/pokemon/${id}`);
+        const data = await response.json();
+        console.log(data);
+        // 이름 (영어)
+        console.log(data.name);
+        // 앞모습
+        console.log(data.sprites.front_default);
+        // 울음소리
+        console.log(data.cries.latest);
+
+        const response2 = await fetch(
+          `https://pokeapi.co/api/v2/pokemon-species/${id}`
+        );
+        const data2 = await response2.json();
+        // 한글 이름
+        console.log(data2);
+        console.log(data2.names);
+        console.log(data2.names.filter((v) => v.language.name === "ko"));
+        console.log(
+          data2.names.filter((v) => v.language.name === "ko")[0].name
+        );
+        const koName = data2.names.filter((v) => v.language.name === "ko")[0]
+          .name;
+
+        const poke = {
+          engName: data.name,
+          koName,
+          shape: data.sprites.front_default,
+          sound: data.cries.latest,
+          types: data.types.map((t) => t.type.name),
+          height: data.height / 10,
+          weight: data.weight / 10,
+        };
+
+        window.recentPoke = poke;
+        renderPoke(poke);
+      }
+
+      // 2. input 통해 번호 바꿔보기
+      const pokeBtn = document.querySelector("#pokeBtn");
+      const pokeId = document.querySelector("#pokeId");
+      pokeBtn.addEventListener("click", () => getPokemon(pokeId.value));
+
+      pokeId.addEventListener("keypress", (e) => {
+        if (e.key === "Enter") getPokemon(pokeId.value);
+      });
+
+      // 3. 데이터 화면에 그리기
+      function renderPoke({
+        engName,
+        koName,
+        shape,
+        sound,
+        types,
+        height,
+        weight,
+      }) {
+        const pokeBox = document.querySelector("#pokeBox");
+
+        const typesHTML = types
+          .map(
+            (type) =>
+              `<span class="type-badge type-${type}">${
+                typeKorean[type] || type
+              }</span>`
+          )
+          .join("");
+
+        pokeBox.innerHTML = `
+          <div class="encounter-message">
+            <p>야생의 <span class="pokemon-name">${koName}</span>이(가) 나타났다!</p>
+          </div>
+          <div class="pokemon-card">
+            <h4>${koName}</h4>
+            <h5>${engName}</h5>
+            <div class="pokemon-image">
+              <img src="${shape}" alt="${koName}">
+            </div>
+            <div class="pokemon-types">
+              ${typesHTML}
+            </div>
+            <div class="pokemon-stats">
+              <div class="stat">
+                <div class="stat-label">키</div>
+                <div class="stat-value">${height}m</div>
+              </div>
+              <div class="stat">
+                <div class="stat-label">몸무게</div>
+                <div class="stat-value">${weight}kg</div>
+              </div>
+            </div>
+            <div class="audio-container">
+              <audio id="pokemonCry" src="${sound}" controls></audio>
+            </div>
+          </div>
+        `;
+
+        // 자동으로 울음소리 재생
+        setTimeout(() => {
+          const audio = document.querySelector("#pokemonCry");
+          if (audio) {
+            audio.play().catch((e) => console.log("오디오 자동 재생 실패:", e));
+          }
+        }, 500);
+      }
+
+      // 4. 직전 검색 데이터 자동 로딩
+      document.addEventListener("DOMContentLoaded", () => {
+        if (window.recentPoke) {
+          renderPoke(window.recentPoke);
+        }
+      });
+
+      // 5. 홈 버튼 기능 - 타이틀 클릭시 초기화
+      const homeBtn = document.querySelector("#homeBtn");
+      homeBtn.addEventListener("click", () => {
+        const pokeBox = document.querySelector("#pokeBox");
+        pokeBox.innerHTML = "";
+        document.querySelector("#pokeId").value = "";
+        window.recentPoke = null;
+      });
+    </script>
+  </body>
+</html>
